@@ -65,7 +65,7 @@ def read_file(mainfile, keepcomment=False):
                 input_file += '.tex'
 
             print "Found source file ", input_file
-            nls = read_file(input_file)
+            nls = read_file(input_file, keepcomment)
 
             ms += nls
 
@@ -84,7 +84,6 @@ def do_plots(ms, AAdir='AAS_tex'):
 
             #Look for graphics
             if r'\includegraphics' in l and l.split()[0] != '%':
-                print l
                 g = graph_search.search(l)
                 plot_file = g.group(1)
                 
