@@ -132,11 +132,38 @@ def do_bib(ms, AAdir='AAS_tex'):
             os.system('cp {0} {1}/{0}'.format(bib_file, AAdir))
 
     return
-                
-def main(mainfile, AAdir='AAS_tex', keepcomment=False):
 
-    if os.path.samefile(os.getcwd(),AAdir):
-        print 'WARNING'
+def parse_input(inputlist):
+    """Parse arguments given to this module by the shell into useful function arguments and options
+
+    Parameters
+    ----------
+    
+    inputlist : list of str
+        Probably sys.argv
+
+    Returns
+    -------
+    """
+
+    keepcomment = False
+    AAdir = 'AAS_tex'
+    samedir = False
+    mainfile = ''
+    
+    for i, token in enumerate(inputlist):
+        if token == '-k':
+            keepcomment = True
+        elif token == '-d':
+            AAdir = inputlist[i+1]
+        elif token == '--same-dir':
+            samedir = True
+        else:
+            mainfile = inputlist[i]
+            
+    return mainfile, AAdir, samedir, keepcomment
+
+def main(mainfile, AAdir='AAS_tex', keepcomment=False):
 
     ms = read_file(mainfile, keepcomment)
     ms = do_plots(ms,AAdir)
@@ -151,6 +178,29 @@ def main(mainfile, AAdir='AAS_tex', keepcomment=False):
     print "All done!"
     return
 
+def dir_warn():
+    print 
+    print "You've set the AAtex build directory to be the same as the current directory. This is not recommended because your original tex file will be overwritted. To force this behavior use the --same-dir option"
+    print 
+    
 if __name__ == '__main__':
     import sys
-    sys.exit(main(sys.argv[1]))
+
+    mainfile, AAdir, samedir, keepcomment = parse_input(sys.argv[1:])
+
+    #Do some sanity checks
+    if not os.path.exists(mainfile):
+        raise Exception("Could not find main tex file {}. Aborting".format(mainfile))
+
+    if os.path.exists(AAdir):
+        if os.path.samefile(os.getcwd(), AAdir) and not samedir:
+            dir_warn()
+            sys.exit()
+    else:
+        if os.path.abspath(os.getcwd()) == os.path.abspath(AAdir) and not samedir:
+            dir_warn()
+        print "Creating output directory {}".format(AAdir)
+        os.makedirs(AAdir)
+
+    #Run the program
+    sys.exit(main(mainfile, AAdir, keepcomment))
