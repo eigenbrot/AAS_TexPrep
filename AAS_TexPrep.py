@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import os
 import re
 
@@ -5,38 +6,6 @@ graph_search = re.compile(r'includegraphics\[?.*\]?\{(.*)\}')
 input_search = re.compile(r'input\{(.*)\}')
 bib_search = re.compile(r'bibliography\{(.*)\}')
 bibstyle_search = re.compile(r'bibliographystyle\{(.*)\}')
-
-def do_tex(filename, fignum, AAdir='AAS_tex'):
-
-    with open(filename,'r') as f:
-        lines = f.readlines()
-
-    #We're going to write all lines to a new file
-    with open('{}/{}'.format(AAdir,filename),'w') as nf:
-        
-        for l in lines:
-
-            #Look for graphics
-            if r'\includegraphics' in l and l.split()[0] != '%':
-                print l
-                g = graph_search.search(l)
-                plot_file = g.group(1)
-                
-                #Rename the file
-                extension = plot_file.split('.')[-1]
-                new_name = 'f{:n}.{}'.format(fignum,extension)
-                print '{} -> {}/{}'.format(plot_file, AAdir, new_name)
-
-                os.system('cp {} {}/{}'.format(plot_file, AAdir, new_name))
-                l = l.replace(plot_file, new_name)
-
-                #Increment
-                fignum += 1
-            
-            #No matter what we found, we need to write the new line
-            nf.write(l)
-
-    return fignum
 
 def is_comment(line):
 
